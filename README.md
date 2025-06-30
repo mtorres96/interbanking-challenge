@@ -182,7 +182,7 @@ Dirigirme desde la terminal a la carpeta del proyecto "lambda-company" y ejecuta
 npm run lambda:dev
 ```
 
-👉 Usar este endpoint:
+Usar este endpoint:
 
 ```
 POST http://localhost:3000/companies
