@@ -1,0 +1,27 @@
+[
+    { 
+      "cuit": "20304050601",
+      "businessName": "Manuel Torres SRL",
+      "joinedAt": "2025-05-10T00:00:00.000Z",
+      "type": "PYME"
+    },
+    {
+      "cuit": "20304050602",
+      "businessName": "Hernández y Asociados",
+      "joinedAt": "2025-05-15T00:00:00.000Z",
+      "type": "CORPORATE"
+    },
+    {
+      "cuit": "20304050100",
+      "businessName": "Casa de comidas SA",
+      "joinedAt": "2025-06-15T00:00:00.000Z",
+      "type": "PYME"
+    },
+    { 
+      "cuit": "20304050102",
+      "businessName": "Manuel Torres SRL",
+      "joinedAt": "2025-06-10T00:00:00.000Z",
+      "type": "PYME"
+    }
+  ]
+  

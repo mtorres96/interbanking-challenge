@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.150",
+    "esbuild": "^0.25.5",
+    "serverless": "^4.17.1",
+    "serverless-offline": "^14.4.0"
+  },
+  "scripts": {
+    "lambda:dev": "serverless offline",
+    "lambda:deploy": "serverless deploy"
+  }
+}

@@ -1,0 +1,16 @@
+[
+    {
+      "companyId": "20304050601",
+      "amount": 1500,
+      "debitAccount": "123-456",
+      "creditAccount": "789-000",
+      "date": "2025-05-20T00:00:00.000Z"
+    },
+    {
+      "companyId": "20304050601",
+      "amount": 2000,
+      "debitAccount": "123-456",
+      "creditAccount": "789-000",
+      "date": "2025-06-20T00:00:00.000Z"
+    }
+  ]
