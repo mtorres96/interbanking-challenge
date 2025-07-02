@@ -48,15 +48,21 @@ Dirigirme desde la terminal a la carpeta del proyecto "api-endpoints" y ejecutar
 
 ```bash
 npm install
+npm run seed 
 npm run start:dev
 ```
+Nota: El comando `npm run seed` crea una base de datos vacía en el archivo `./data/database.sqlite` y rellena con datos de ejemplo.
 
 ### Variables de entorno
+Renombrar el archivo `.env.example` a `.env` y rellenar los campos con los valores adecuados.
 
 `.env` (ejemplo):
 
 ```
+DB_TYPE=sqlite
+DB_PATH=./data/database.sqlite
 PORT=3000
+
 ```
 
 El puerto por defecto es `3000`, no es obligatorio definirlo en el archivo `.env`.
@@ -159,6 +165,13 @@ Función Lambda que simula la adhesión de una empresa. Valida campos, controla 
 
 ---
 ---
+### Precondiciones
+
+Tener instalado en su máquina DynamoDB local y el aws cli.
+
+---
+
+---
 ### Stack tecnológico
 
 - Node.js: **v20.17.0**
@@ -179,6 +192,18 @@ Función Lambda que simula la adhesión de una empresa. Valida campos, controla 
 Dirigirme desde la terminal a la carpeta del proyecto "lambda-company" y ejecutar los siguientes comandos:
 
 ```bash
+aws dynamodb create-table \
+  --table-name Companies \
+  --attribute-definitions AttributeName=cuit,AttributeType=S \
+  --key-schema AttributeName=cuit,KeyType=HASH \
+  --billing-mode PAY_PER_REQUEST \
+  --endpoint-url http://localhost:8000 \
+  --region us-east-1
+
+```
+
+
+```bash
 npm run lambda:dev
 ```
 
@@ -196,6 +221,15 @@ Body:
   "businessName": "Empresa SRL",
   "type": "PYME"
 }
+```
+
+---
+---
+
+### Tests
+
+```bash
+npm run test
 ```
 
 ---
@@ -240,3 +274,36 @@ Este es el esquema original, donde todos los endpoints (GET, POST, etc.) son res
 En este esquema, el API Gateway enruta los métodos GET hacia el microservicio REST tradicional, mientras que el método POST /companies es delegado a una función Lambda, que cumple con la misma responsabilidad (registro de empresas), pero desacoplado del backend principal.
 
 ![Diagra 2 Screenshot](./docs/diagram2.png)
+
+### Dead Letter Queue (DLQ)
+La función Lambda register admite reintentos automáticos. Si falla 2 veces consecutivas, el evento se redirige automáticamente a una cola SQS (CompanyDLQ), donde queda almacenado para su posterior análisis o reintento manual. Esta práctica mejora la resiliencia del sistema y evita la pérdida de datos.
+
+```bash
+functions:
+  register:
+    handler: lambda/company-registration.handler
+    events:
+      - http:
+          path: register
+          method: post
+    maximumRetryAttempts: 2
+    deadLetter:
+      targetArn:
+        Fn::GetAtt:
+          - CompanyDLQ
+          - Arn
+
+```
+Y definir el recurso en la sección resources:
+```bash
+resources:
+  Resources:
+    CompanyDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: CompanyDLQ
+```
+
+Nota: Esta configuración es efectiva únicamente en entorno cloud con despliegue real. No tiene efecto en ejecución local con serverless-offline.
+
+![Diagra 2 Screenshot](./docs/dlq.png)

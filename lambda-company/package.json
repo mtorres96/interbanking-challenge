@@ -1,12 +1,20 @@
 {
   "devDependencies": {
     "@types/aws-lambda": "^8.10.150",
+    "@types/jest": "^30.0.0",
     "esbuild": "^0.25.5",
+    "jest": "^30.0.3",
     "serverless": "^4.17.1",
-    "serverless-offline": "^14.4.0"
+    "serverless-offline": "^14.4.0",
+    "ts-jest": "^29.4.0"
   },
   "scripts": {
-    "lambda:dev": "serverless offline",
-    "lambda:deploy": "serverless deploy"
+    "lambda:dev": "sls offline start --stage dev",
+    "lambda:deploy": "sls offline start --stage dev",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.840.0",
+    "@aws-sdk/lib-dynamodb": "^3.840.0"
   }
 }

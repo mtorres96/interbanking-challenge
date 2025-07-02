@@ -1,40 +1,51 @@
-import { InMemoryCompanyRepository } from '../infrastructure/persistence/in-memory-company.repository';
 import { RegisterCompanyUseCase } from '../application/use-cases/register-company.use-case';
+import { Company } from '../domain/entities/company.entity';
 
 describe('RegisterCompanyUseCase', () => {
   let useCase: RegisterCompanyUseCase;
-  let repo: InMemoryCompanyRepository;
+  let mockRepo: {
+    findByCuit: jest.Mock;
+    save: jest.Mock;
+  };
 
   beforeEach(() => {
-    repo = new InMemoryCompanyRepository();
-    useCase = new RegisterCompanyUseCase(repo);
+    mockRepo = {
+      findByCuit: jest.fn(),
+      save: jest.fn(),
+    };
+
+    useCase = new RegisterCompanyUseCase(mockRepo as any);
   });
 
   it('should register a new company', async () => {
+    mockRepo.findByCuit.mockResolvedValue(null);
+
     await useCase.execute({
       cuit: '20304099991',
       businessName: 'Empresa 1',
       type: 'PYME',
     });
 
-    const saved = await repo.findByCuit('20304050601');
-    expect(saved).toBeDefined();
-    expect(saved?.businessName).toBe('Manuel Torres SRL');
+    expect(mockRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cuit: '20304099991',
+        businessName: 'Empresa 1',
+        type: 'PYME',
+      }),
+    );
   });
 
   it('should throw if company with same CUIT exists', async () => {
-    await useCase.execute({
-      cuit: '20304099991',
-      businessName: 'Empresa 1',
-      type: 'PYME',
-    });
+    mockRepo.findByCuit.mockResolvedValue(
+      new Company('20304099991', 'Ya existe', new Date(), 'PYME'),
+    );
 
     await expect(
       useCase.execute({
-        cuit: '20304050601',
-        businessName: 'Otra empresa',
+        cuit: '20304099991',
+        businessName: 'Duplicada',
         type: 'CORPORATE',
       }),
-    ).rejects.toThrow(/already exists/);
+    ).rejects.toThrow(/already exists/i);
   });
 });

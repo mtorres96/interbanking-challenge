@@ -1,4 +1,4 @@
-service: interbanking-company-registration
+service: register-company-service
 
 frameworkVersion: '4'
 
@@ -6,31 +6,48 @@ provider:
   name: aws
   runtime: nodejs20.x
   region: us-east-1
-  stage: dev
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+          Resource:
+            - arn:aws:dynamodb:${aws:region}:*:table/CompanyTable
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+          Resource:
+            - arn:aws:sqs:${aws:region}:*:CompanyDLQ
 
 functions:
-  registerCompany:
+  register:
     handler: lambda/company-registration.handler
     events:
-      - httpApi:
-          path: /companies
+      - http:
+          path: register
           method: post
+    maximumRetryAttempts: 2
 
-package:
-  individually: true
-  patterns:
-    - '!node_modules/**'
-    - 'lambda/**'
-    - '!src/**'
+resources:
+  Resources:
+    CompanyTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CompanyTable
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: cuit
+            AttributeType: S
+        KeySchema:
+          - AttributeName: cuit
+            KeyType: HASH
+
+    CompanyDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: CompanyDLQ
 
 plugins:
   - serverless-offline
-
-custom:
-  esbuild:
-    bundle: true
-    target: node20
-    format: esm
-    platform: node
-    tsconfig: tsconfig.lambda.json
-    outdir: .serverless

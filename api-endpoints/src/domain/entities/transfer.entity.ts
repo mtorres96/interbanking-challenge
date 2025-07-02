@@ -4,22 +4,22 @@ export class Transfer {
     public readonly amount: number,
     public readonly debitAccount: string,
     public readonly creditAccount: string,
-    public readonly date: Date,
+    public readonly createdAt: Date,
   ) {}
 
-  static create(data: {
+  static create(props: {
     companyId: string;
     amount: number;
     debitAccount: string;
     creditAccount: string;
-    date?: Date;
+    createdAt?: Date;
   }): Transfer {
     return new Transfer(
-      data.companyId,
-      data.amount,
-      data.debitAccount,
-      data.creditAccount,
-      data.date ?? new Date(),
+      props.companyId,
+      props.amount,
+      props.debitAccount,
+      props.creditAccount,
+      props.createdAt ?? new Date(),
     );
   }
 }

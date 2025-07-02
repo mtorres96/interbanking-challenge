@@ -7,22 +7,13 @@ import { CompanyRepository } from '../../domain/repositories/company.repository'
 export class GetRecentlyAdheredCompaniesUseCase {
   constructor(private readonly companyRepo: CompanyRepository) {}
 
-  async execute(): Promise<Company[]> {
-    const now = new Date();
-    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const endOfLastMonth = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      0,
-      23,
-      59,
-      59,
-      999,
-    );
-
-    return this.companyRepo.findByAdhesionDateRange(
-      startOfLastMonth,
-      endOfLastMonth,
-    );
+  async execute(pagination: { page: number; limit: number }) {
+    const { page, limit } = pagination;
+    const offset = (page - 1) * limit;
+  
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  
+    return this.companyRepo.findAdheredSincePaginatedWithTotal(oneMonthAgo, offset, limit);
   }
 }

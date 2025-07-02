@@ -1,9 +1,24 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
+import helmet from 'helmet';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(helmet());
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   const config = new DocumentBuilder()
     .setTitle('Interbanking API')
@@ -15,8 +30,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
-  await app.listen(process.env.PORT || 3000);
-  console.log(`API listening on http://localhost:${process.env.PORT || 3000}`);
-  console.log(`Swagger docs at http://localhost:${process.env.PORT || 3000}/docs`);
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  console.log(`API listening on http://localhost:${port}`);
+  console.log(`Swagger docs at http://localhost:${port}/docs`);
 }
 bootstrap();

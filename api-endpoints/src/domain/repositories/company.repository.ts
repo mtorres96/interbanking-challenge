@@ -1,9 +1,12 @@
-import { Company } from '../entities/company.entity';
+import { Company } from "../entities/company.entity";
 
-export interface CompanyRepository {
-  save(company: Company): Promise<void>;
-  findAll(): Promise<Company[]>;
-  findByCuit(cuit: string): Promise<Company | null>;
-  findByBusinessName(businessName: string): Promise<Company[]>;
-  findByAdhesionDateRange(startDate: Date, endDate: Date): Promise<Company[]>;
+export abstract class CompanyRepository {
+  abstract save(company: Company): Promise<Company>;
+  abstract findByCuit(cuit: string): Promise<Company | null>;
+  abstract findAdheredSince(date: Date): Promise<Company[]>;
+  abstract findAdheredSincePaginatedWithTotal(
+    date: Date,
+    offset: number,
+    limit: number
+  ): Promise<{ results: Company[]; total: number }>;
 }

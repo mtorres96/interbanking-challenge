@@ -1,36 +1,34 @@
 import { GetRecentlyAdheredCompaniesUseCase } from "../application/use-cases/get-recently-adhered-companies.use-case";
 import { Company } from "../domain/entities/company.entity";
-import { InMemoryCompanyRepository } from "../infrastructure/persistence/in-memory-company.repository";
-
 
 describe('GetRecentlyAdheredCompaniesUseCase', () => {
   let useCase: GetRecentlyAdheredCompaniesUseCase;
-  let repo: InMemoryCompanyRepository;
+  let mockRepo: { findAdheredSincePaginatedWithTotal: jest.Mock };
 
   beforeEach(() => {
-    repo = new InMemoryCompanyRepository();
-    useCase = new GetRecentlyAdheredCompaniesUseCase(repo);
+    mockRepo = {
+      findAdheredSincePaginatedWithTotal: jest.fn(),
+    };
+
+    useCase = new GetRecentlyAdheredCompaniesUseCase(mockRepo as any);
   });
 
   it('returns companies created within last 30 days', async () => {
-    const recent = Company.create({
+    const now = new Date();
+    const recentCompany = Company.create({
       cuit: '20304050601',
       businessName: 'Empresa Nueva',
       type: 'PYME',
-      joinedAt: new Date(),
+      joinedAt: now,
     });
 
-    const old = Company.create({
-      cuit: '20111222333',
-      businessName: 'Antigua',
-      type: 'CORPORATE',
-      joinedAt: new Date('2020-01-01'),
+    mockRepo.findAdheredSincePaginatedWithTotal.mockResolvedValue({
+      data: [recentCompany],
+      total: 1,
     });
 
-    await repo.save(recent);
-    await repo.save(old);
+    const result = await useCase.execute({ page: 1, limit: 1 });
 
-    const result = await useCase.execute();
-    expect(result).toHaveLength(2);
+    expect(result.total).toBe(1); 
   });
 });
